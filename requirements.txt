@@ -1,8 +1,0 @@
-numpy
-tqdm
-opencv-python
-matplotlib
-seaborn
-torch
-torchvision
-pillow
