@@ -45,8 +45,8 @@ class Trainer:
                                 'dev_loss',
                                 'dev_acc'], name, load=resume)
 
-        # if resume:
-        #     self.resumeCheckpoint()
+        if resume:
+            self.resumeCheckpoint()
 
 
     def fit(self):

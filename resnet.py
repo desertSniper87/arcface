@@ -96,7 +96,7 @@ class ResNet(nn.Module):
 
         # FC layer if we do not want the features
         self.fc  = nn.Linear(2048, self.num_features) # 512 if resnet18,34
-        self.bnf = nn.BatchNorm1d(512, eps=1e-05)
+        self.bnf = nn.BatchNorm1d(self.num_features, eps=1e-05)
 
         self.drop = nn.Dropout(p=0.1) #
 

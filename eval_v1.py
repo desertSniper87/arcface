@@ -1,11 +1,25 @@
+import os
+
 import torch
-from resnet import ResNet18
+from resnet import ResNet18, ResNet50
 import torchvision.transforms as transforms
 from PIL import Image
+import argparse
+
+parser = argparse.ArgumentParser(description="Your program description")
+parser.add_argument("-i", "--id", type=int, required=True, help="Name of Image id")
+parser.add_argument("-w", "--weight", type=str, required=False, choices=['best', 'checkpoint'], default='best', help="Choice of checkpoints")
+parser.add_argument("-p", "--perclass", type=bool, required=False, default=False, help="View per class accuracy")
+parser.add_argument("-t", "--total", type=bool, required=False, default=False, help="View Total Accuracy")
+parser.add_argument("-r", "--result", type=bool, required=False, default=False, help="View Total Accuracy")
+args = parser.parse_args()
 
 # Load the trained model
-model = ResNet18()
-model.load_state_dict(torch.load('rn18_v1/best_weights.pth'))
+model = ResNet50(num_features=5013)
+if args.weight == 'best':
+    model.load_state_dict(torch.load('rn50_v1/best_weights.pth'))
+else:
+    model.load_state_dict(torch.load('rn50_v1/checkpoint.pth'))
 model.eval()
 
 if torch.cuda.is_available():
@@ -27,16 +41,40 @@ transform = transforms.Compose([
 ])
 
 # Load the image
-image = Image.open('/Users/bccca/dev/dat/personai_icartoonface_rectrain/icartoonface_rectrain/personai_icartoonface_rectrain_00004/personai_icartoonface_rectrain_00004_0000000.jpg')
+dir = f'/root/face-rnd/dat/personai_icartoonface_rectrain/icartoonface_rectrain/personai_icartoonface_rectrain_{args.id:05d}'
 
-# Preprocess the image
-image_tensor = transform(image).unsqueeze(0).to(device)
+positive, total = 0, 0
+result = {}
 
-# Forward pass
-with torch.no_grad():
-    output = model(image_tensor)
+for filename in os.listdir(dir):
+    image = Image.open(f'{dir}/{filename}').convert('RGB')
 
-# Get the predicted class index
-_, predicted_class = torch.max(output, 1)
-predicted_class = predicted_class.item()
-print(f'Predicted class: {predicted_class}')
+    # Preprocess the image
+    image_tensor = transform(image).unsqueeze(0).to(device)
+
+    # Forward pass
+    with torch.no_grad():
+        output = model(image_tensor)
+
+    # Get the predicted class index
+    _, predicted_class = torch.max(output, 1)
+    predicted_class = predicted_class.item()
+
+    if predicted_class not in result:
+        result[predicted_class] = 1
+    else:
+        result[predicted_class] += 1
+
+
+    if args.perclass:
+        print(f'Predicted class: {predicted_class}')
+
+    if predicted_class == args.id:
+        positive += 1
+
+    total += 1
+
+print(result)
+
+if args.total:
+    print(f"{args.id}\t{total}\t{positive / total * 100}")

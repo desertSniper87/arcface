@@ -18,12 +18,12 @@ from torch.utils.data import Dataset, DataLoader, random_split
 
 if __name__ == '__main__':
 
-    TRAIN_DIR  = "~/dev/dat/personai_icartoonface_rectrain/icartoonface_rectrain_split/train"
+    TRAIN_DIR  = "/root/face-rnd/dat/personai_icartoonface_rectrain/icartoonface_rectrain_split/train"
     #TRAIN_DIR  = "./classification/train_subset/train_subset/train"
-    DEV_DIR    = "~/dev/dat/personai_icartoonface_rectrain/icartoonface_rectrain_split/val"
+    DEV_DIR    = "/root/face-rnd/dat/personai_icartoonface_rectrain/icartoonface_rectrain_split/val"
     
     # Hyperparams
-    RESUME     = True
+    RESUME     = False
     NAME       = 'rn50_v1'
     EPOCHS     = 100
     BATCH_SIZE = 64
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     dev_loader    = DataLoader(dev_dataset, batch_size=config['batch_size'], shuffle=False, drop_last=True)
 
     # Choose the model
-    model = ResNet50().to(device)
+    model = ResNet50(num_features=5013).to(device)
 
     optimizer = optim.SGD(model.parameters(), lr=config['lr'], momentum=0.9, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=(len(train_loader) * config['epochs']))
